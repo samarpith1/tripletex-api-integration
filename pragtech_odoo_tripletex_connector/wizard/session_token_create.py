@@ -42,7 +42,7 @@ class SessionTokenWizard(models.TransientModel):
                         'token': response_data['value']['token']
                     })
             else:
-                self.env['tripletex.token'].create({
+                self.env['tripletex.session.token'].create({
                     'expire_date': response_data['value']['expirationDate'],
                     'token': response_data['value']['token']
                 })
