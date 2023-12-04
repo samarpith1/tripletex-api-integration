@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="res_company_form">
+            <field name="name">res.company.form</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="base.view_company_form" />
+            <field name="arch" type="xml">
+
+                <notebook position="inside">
+                    <page string="Tripletex Accounting">
+                        <separator name="configuration" string="Triplex Configuration"/>
+                        <div>
+                            <span>
+                                <button string="Authenticate" name="login" class="oe_highlight" icon="fa-plug"/>
+                            </span>
+
+                            <span style="margin-left:20px">
+                                <button string="Refresh Token" name="refresh_token" class="oe_highlight" icon="fa-refresh" context="{'not_cron': 1}"/>
+                            </span>
+                        </div>
+                        <notebook>
+                            <page name="initial_sync" string='Import'>
+                                <group class="paddingbutton">
+                                    <div>
+                                        <button string="1-Import Accounts/ Tracking Categories" name="import_accounts" class="oe_highlight" icon="fa-arrow-circle-down"/>
+                                    </div>
+                                    <group></group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </page>
+                    <page string="Tripletex Integration">
+                        <separator name="configuration" string="Triplex Configuration"/>
+                        <div>
+                            <span>
+                                <button string="Authenticate" name="login" class="oe_highlight" icon="fa-plug"/>
+                            </span>
+
+                            <span style="margin-left:20px">
+                                <button string="Refresh Token" name="refresh_token" class="oe_highlight" icon="fa-refresh" context="{'not_cron': 1}"/>
+                            </span>
+                        </div>
+                        <group></group>
+                        <group>
+                            <group>
+                                <field name="consumer_token" />
+                                <field name="employee_token" />
+                            </group>
+                            <group>
+                            </group>
+                            <group></group>
+                            <group>
+
+                                <button string="Generate Token" name="pragtech_odoo_tripletex_connector.tripletex_session_create_action" type="action" class="oe_highlight"/>
+                            </group>
+                            <group>
+                                <field name="token"></field>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="initial_sync" string="Import">
+                                <group class="paddingbutton">
+                                    <div>
+                                        <button string="1-Import Accounts/ Tracking Categories" class="oe_highlight" icon="fa-arrow-circle-down"/>
+                                    </div>
+                                    <group/>
+                                </group>
+                            </page>
+                        </notebook>
+                    </page>
+                </notebook>
+
+            </field>
+        </record>
+    </data>
+</odoo>

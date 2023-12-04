@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Tree view      -->
+    <record id="tripletex_session_token_tree_view" model="ir.ui.view">
+        <field name="name">tripletex.session.token.create.tree.view</field>
+        <field name="model">tripletex.session.token</field>
+        <field name="arch" type="xml">
+            <tree string="Session Token">
+                <field name="session_token"/>
+                <field name="expiration_date"/>
+            </tree>
+        </field>
+    </record>
+    <!-- End Tree View   -->
+    <record id="tripletex_session_token_form_view" model="ir.ui.view">
+        <field name="name">tripletex.session.token.create.form.view</field>
+        <field name="model">tripletex.session.token</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="pragtech_odoo_tripletex_connector.tripletex_session_create_action" type="action" string="Create Token" class="btn-default" />
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="session_token"/>
+                            <field name="expiration_date"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_session_create" model="ir.actions.act_window">
+        <field name="name">Session Token</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">tripletex.session.token</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

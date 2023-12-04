@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="session_token_create_form_view" model="ir.ui.view">
+        <field name="name">session.create.form.view</field>
+        <field name="model">token.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="expire_date"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="tripletex_token_generate" string="Token Create" type="object"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="tripletex_session_create_action" model="ir.actions.act_window">
+        <field name="name">Create Token</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">token.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>
