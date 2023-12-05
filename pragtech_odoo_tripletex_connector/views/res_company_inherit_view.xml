@@ -62,7 +62,7 @@
                             <page name="initial_sync" string="Import">
                                 <group class="paddingbutton">
                                     <div>
-                                        <button string="1-Import Accounts/ Tracking Categories" class="oe_highlight" icon="fa-arrow-circle-down"/>
+                                        <button string="Import Contact" name="tripletex_import_contacts" type="object" class="oe_highlight" icon="fa-arrow-circle-down"/>
                                     </div>
                                     <group/>
                                 </group>
