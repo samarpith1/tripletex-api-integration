@@ -62,12 +62,23 @@
                             <page name="initial_sync" string="Import">
                                 <group class="paddingbutton">
                                     <div>
-                                        <button string="1-Import Accounts/ Tracking Categories" class="oe_highlight" icon="fa-arrow-circle-down"/>
+                                        <button string="1-Import Contacts" name="tripletex_import_contacts" type="object" class="oe_highlight" icon="fa-arrow-circle-down"/>
+                                    </div>
+                                    <group/>
+                                </group>
+                            </page>
+                            <page name="initial_sync" string="Export">
+                                <group class="paddingbutton">
+                                    <div>
+                                        <button string="1-Export Contacts" name="tripletex_import_contacts" type="object" class="oe_highlight" icon="fa-arrow-circle-down"/>
                                     </div>
                                     <group/>
                                 </group>
                             </page>
                         </notebook>
+                        
+                           
+                       
                     </page>
                 </notebook>
 
