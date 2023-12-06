@@ -67,14 +67,14 @@
                                     <group/>
                                 </group>
                             </page>
-                            <page name="initial_sync" string="Export">
+                            <!-- <page name="initial_sync" string="Export">
                                 <group class="paddingbutton">
                                     <div>
-                                        <button string="1-Export Contacts" name="tripletex_import_contacts" type="object" class="oe_highlight" icon="fa-arrow-circle-down"/>
+                                        <button string="1-Export Contacts" name="create_contact_in_tripletex" type="object" class="oe_highlight" icon="fa-arrow-circle-down"/>
                                     </div>
                                     <group/>
                                 </group>
-                            </page>
+                            </page> -->
                         </notebook>
                         
                            

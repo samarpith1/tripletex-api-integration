@@ -27,6 +27,7 @@ Long description of module's purpose
         'views/res_company_inherit_view.xml',
         'views/session_token_view.xml',
         'views/menu.xml',
+        'views/res_partner_inherit_view.xml',
 
     ],
     # only loaded in demonstration mode
