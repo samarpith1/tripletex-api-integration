@@ -1,6 +1,6 @@
 from odoo import _, models, fields,api
 from odoo.exceptions import UserError
-import requests,phonenumbers
+import requests
 import datetime
 from dateutil.parser import parse
 import base64
@@ -14,6 +14,7 @@ class ResCompany(models.Model):
     consumer_token = fields.Char()
     employee_token = fields.Char()
     token =  fields.Char(string='Token',)
+
     
     
     
@@ -72,7 +73,6 @@ class ResCompany(models.Model):
             
 
             if partner:
-               
                 partner.write(partner_data)
             else:
                 
@@ -83,6 +83,7 @@ class ResCompany(models.Model):
 
 
     
+
     # @api.model
     # def create_customer_in_tripletex(self):
     #     # Assuming 'xero_oauth_token' is the Tripletex API token in your res.partner model
@@ -139,3 +140,63 @@ class ResCompany(models.Model):
     # def process_tripletex_response(self, response):
     #     # Implement logic to handle the Tripletex API response
     #     pass
+
+    def tripletex_export_contacts(self):
+        print("-----work this print")
+
+
+
+
+    def import_tripletex_product(self):
+        print("::::::::::::::::::::PRODUCT IMPORT::::::::::::::::::::::::::")
+        url = 'https://api.tripletex.io/v2/product'
+        consumer_token = self.consumer_token 
+        employee_token = self.employee_token
+        company_id = '12841878'
+        session_token = self.token
+
+        auth_token = f'{company_id}:{session_token}'
+        print("::::::::::::::::::::::::::::::::::AUTH TOKEN:::::::::::::::::::::::::::::::::::::", auth_token)
+        encoded_token = base64.b64encode(auth_token.encode('utf-8')).decode('utf-8')
+        print("::::::::::::::::::::::::::::::::::ENCODED TOKEN:::::::::::::::::::::::::::::::::::::", encoded_token)
+
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': f'Basic {encoded_token}',
+            'consumerToken': consumer_token,
+            'employeeToken': employee_token
+        }
+
+        try:
+            response = requests.get(url, headers=headers)
+            print(":::::::::::::::::::::::::::::::::::::::::::RESPONSE:::::::::::::::::::::::::::::::::::::::::::::::::", response)
+
+            if response.status_code == 200:
+                json_data = response.json()
+                print("::::::::::::::::::::::::::::::::::::::::::::::JSON::::::::::::::::::::::::::::::::::::::::::", json_data)
+                self.process_tripletex_products(json_data['values'])
+
+            else:
+                print(f"Error: {response.status_code}, {response.text}")
+                print("::::::::::::::::::::::::::::::::::::::::::::::ELSE RESPONSE::::::::::::::::::::::::::::::::::::::::::")
+
+
+        except Exception as e:
+            print(f"Error during request: {e}")
+            
+            
+            
+            
+            
+
+    @api.model
+    def process_tripletex_products(self, tripletex_products):
+        print("::::::::::::::::::::::::::::::::::::::::::::SECOND_TRIPLEX_PRODUCT_FUNCTION::::::::::::::::::::::::::::::::::::::::::::::::::")
+        for product in tripletex_products:
+            print("::::::::::::::::::::::::::::::::::::::::::::PRODUCT::::::::::::::::::::::::::::::::::::::::::::::::::",product)
+            product_data = {
+                'name': f"{product.get('name', '')}",
+            }
+            self.env['product.template'].create(product_data)
+            print("::::::::::::::::::::::::::::::::::::::::::::PARTNER_DATA_CREATE::::::::::::::::::::::::::::::::::::::::::::::::::",product_data)
+

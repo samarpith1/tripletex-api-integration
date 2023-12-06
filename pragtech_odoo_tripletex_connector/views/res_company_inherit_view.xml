@@ -65,20 +65,18 @@
                                         <button string="1-Import Contacts" name="tripletex_import_contacts" type="object" class="oe_highlight" icon="fa-arrow-circle-down"/>
                                     </div>
                                     <group/>
+                <separator/>
+
                                 </group>
-                            </page>
-                            <!-- <page name="initial_sync" string="Export">
                                 <group class="paddingbutton">
                                     <div>
-                                        <button string="1-Export Contacts" name="create_contact_in_tripletex" type="object" class="oe_highlight" icon="fa-arrow-circle-down"/>
+                                        <button string="2-Import products" name="import_tripletex_product" type="object" class="oe_highlight" icon="fa-arrow-circle-down"/>
                                     </div>
                                     <group/>
                                 </group>
-                            </page> -->
-                        </notebook>
-                        
+                            </page>
                            
-                       
+                        </notebook> 
                     </page>
                 </notebook>
 
