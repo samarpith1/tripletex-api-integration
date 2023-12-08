@@ -26,6 +26,7 @@ Long description of module's purpose
         'wizard/session_token_create.xml',
         'views/res_company_inherit_view.xml',
         'views/session_token_view.xml',
+        'views/product_template_inherit_views.xml',
         'views/menu.xml',
 
     ],

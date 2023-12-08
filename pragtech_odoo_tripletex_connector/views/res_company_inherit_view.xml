@@ -65,7 +65,7 @@
                                         <button string="1-Import Contacts" name="tripletex_import_contacts" type="object" class="oe_highlight" icon="fa-arrow-circle-down"/>
                                     </div>
                                     <group/>
-                <separator/>
+                                    <separator/>
 
                                 </group>
                                 <group class="paddingbutton">
@@ -81,11 +81,17 @@
                                         <button string="1-Export Contacts" name="tripletex_export_contacts" type="object" class="oe_highlight" icon="fa-arrow-circle-down"/>
                                     </div>
                                     <group/>
-                <separator/>
-
+                                    <separator/>
+                                </group>
+                                <group class="paddingbutton">
+                                    <div>
+                                        <button string="2-Export Products" name="tripletex_export_products_main" type="object" class="oe_highlight" icon="fa-arrow-circle-down"/>
+                                    </div>
+                                    <group/>
+                                    <separator/>
                                 </group>
                             </page>
-                        </notebook> 
+                        </notebook>
                     </page>
                 </notebook>
 
