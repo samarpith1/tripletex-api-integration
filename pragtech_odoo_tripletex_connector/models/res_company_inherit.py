@@ -4,6 +4,8 @@ import requests
 import datetime
 from dateutil.parser import parse
 import base64
+import logging
+_logger = logging.getLogger(__name__)
 
 class ResCompany(models.Model):
 
@@ -15,19 +17,24 @@ class ResCompany(models.Model):
     employee_token = fields.Char()
     token =  fields.Char(string='Token',)
 
+    #sale_order
+    orderDateFrom = fields.Date(string="Order Date From:")
+    orderDateTo = fields.Date(string="Order Date To:")
+    from_count = fields.Char(string="From:")
+    count = fields.Char(string="Count:")
+    
     
     
     def tripletex_import_contacts(self):
         url = 'https://api.tripletex.io/v2/contact'
-        consumer_token = self.consumer_token  # Replace with your consumer token
-        employee_token = self.employee_token  # Replace with your employee token
-        company_id = '12841878'  # Replace with your company ID
-        session_token = self.token  # Replace with your session token
+        consumer_token = self.consumer_token 
+        employee_token = self.employee_token  
+        company_id = '12841878' 
+        session_token = self.token  
 
-        # Create the authentication token
+       
         auth_token = f'{company_id}:{session_token}'
         encoded_token = base64.b64encode(auth_token.encode('utf-8')).decode('utf-8')
-        print("-----encoded:::::::::::::::::::::::::::::::::::::", encoded_token)
 
         headers = {
             'Accept': 'application/json',
@@ -38,12 +45,10 @@ class ResCompany(models.Model):
 
         try:
             response = requests.get(url, headers=headers)
-            print("--------------response----------------------------", response)
 
             if response.status_code == 200:
-                # Request was successful
+                
                 json_data = response.json()
-                print("======================================JSON==============================", json_data)
                 self.process_tripletex_contacts(json_data['values'])
 
             else:
@@ -60,29 +65,90 @@ class ResCompany(models.Model):
     @api.model
     def process_tripletex_contacts(self, tripletex_contacts):
         for contact in tripletex_contacts:
-           
+            print(":::::::::::::::::::::::::::::::::::::::::::::NEW CUSTOMER DATA CREATION:::::::::::::::::::::::::::::::::::",contact)           
             partner_data = {
                 'name': f"{contact.get('firstName', '')} {contact.get('lastName', '')}",
                 'email': contact.get('email'),
-                
+                'mobile': str(contact.get('phoneNumberMobile', '')),
+                'phone': contact.get('phoneNumberWork', ''),
+                'tripletex_contact_id': contact.get('id'),                
             }
+            print(":::::::::::::::::::::::::::::::::::::::::::::NEW CUSTOMER DATA PARTNER DATA:::::::::::::::::::::::::::::::::::",partner_data)
 
-            partner = self.env['res.partner'].search([('email', '=', partner_data['email'])])
+
+            
+            partner = self.env['res.partner'].search([('tripletex_contact_id', '=', partner_data['tripletex_contact_id'])])
+            print(":::::::::::::::::::::::::::::::::::::::::::::CHECKING CUSTOMER VALIDATIONS:::::::::::::::::::::::::::::::::::",partner)
+
+            
 
             if partner:
                 partner.write(partner_data)
-                print("----------------dfghjkjhgfdsa",partner_data)
-            else:
-               
-                self.env['res.partner'].create(partner_data)
-                print("-----partner",partner_data)
+                print(":::::::::::::::::::::::::::::::::::::::::::::WRITE CUSTOMER DETAILS:::::::::::::::::::::::::::::::::::",partner)
 
+            else:                
+                partner_id = self.env['res.partner'].create(partner_data)
+                print(":::::::::::::::::::::::::::::::::::::::::::::<<<<<<<<CREATED NEW CUSTOMER WITH THE DETAILS>>>>>>>>>>:::::::::::::::::::::::::::::::::::",partner)
+
+                
 
 
     
-    def tripletex_export_contacts(self):
-        print("-----work this print")
+    
+    
+    
+ 
 
+    def export_contacts_to_tripletex(self):
+        try:
+            partners = self.env['res.partner'].search([])
+
+            for partner in partners:
+            
+       
+                url = 'https://api.tripletex.io/v2/contact'
+                consumer_token = self.consumer_token 
+                employee_token = self.employee_token  
+                company_id = '12841878' 
+                session_token = self.token  
+
+            
+                auth_token = f'{company_id}:{session_token}'
+                encoded_token = base64.b64encode(auth_token.encode('utf-8')).decode('utf-8')
+
+                headers = {
+                    'Accept': 'application/json',
+                    'Authorization': f'Basic {encoded_token}',
+                    'consumerToken': consumer_token,
+                    'employeeToken': employee_token
+                }
+                
+                payload = {
+                    "id": 0,
+                    "version": 0,
+                    "firstName": partner.name,
+                    "email": partner.email,
+                    
+                }
+                print("::::::::::::::::::::payload::::::::::", payload)
+                response = requests.post(url, headers=headers, json=payload)
+                print("---------------response---------", response)
+
+                if response.status_code == 200:
+                    json_data = response.json()
+                    self.process_tripletex_response(json_data)
+                else:
+                    print(f": {response.status_code}, {response.text}")
+
+        except Exception as e:
+            print(f"Error during request: {e}")
+
+            
+            
+            
+            
+            
+            
 
 
 
@@ -166,10 +232,78 @@ class ResCompany(models.Model):
 
 
 
+    def tripletex_export_products_main(self):       
+        try:
+            products = self.env['product.template'].search([])
 
-    def tripletex_export_products_main(self):
-        print("::::::::::::::::::::PRODUCT EXPORT::::::::::::::::::::::::::")
-        url = 'https://api.tripletex.io/v2/product'
+            for product in products:
+                print("::::::::::::::::::::::::::::::::::::::::::::::::::PRODUCT::::::::::::::::::::::::::::::::::::::::::::::::::",product)
+                url = 'https://api.tripletex.io/v2/product'
+                consumer_token = self.consumer_token 
+                employee_token = self.employee_token 
+                print("::::::::::::::::::::::::::::::::::::::::::::::::::CONSUMER::::::::::::::::::::::::::::::::::::::::::::::::::",consumer_token)
+                print("::::::::::::::::::::::::::::::::::::::::::::::::::EMPLOYEE::::::::::::::::::::::::::::::::::::::::::::::::::",employee_token)
+                company_id = '12841878' 
+                session_token = self.token  
+                print("::::::::::::::::::::::::::::::::::::::::::::::::::SESSION::::::::::::::::::::::::::::::::::::::::::::::::::",session_token)
+
+
+            
+                auth_token = f'{company_id}:{session_token}'
+                print("::::::::::::::::::::::::::::::::::::::::::::::::::AUTH TOKEN::::::::::::::::::::::::::::::::::::::::::::::::::",auth_token)
+
+                encoded_token = base64.b64encode(auth_token.encode('utf-8')).decode('utf-8')
+                print("::::::::::::::::::::::::::::::::::::::::::::::::::ENCODED TOKEN::::::::::::::::::::::::::::::::::::::::::::::::::",encoded_token)
+
+
+                headers = {
+                    'Accept': 'application/json',
+                    'Authorization': f'Basic {encoded_token}',
+                    'consumerToken': consumer_token,
+                    'employeeToken': employee_token
+                }
+                print("::::::::::::::::::::::::::::::::::::::::::::::::::HEADERS::::::::::::::::::::::::::::::::::::::::::::::::::",headers)
+                
+                payload = {
+                    "id": 0,
+                    "version": 0,
+                    "name": product.name,
+                    "costExcludingVatCurrency": product.standard_price,
+                    "priceIncludingVatCurrency": product.list_price,
+                    
+                }
+                print(":::::::::::::::::::::::::::::::::::::::PAYLOAD:::::::::::::::::::::::::::::::::", payload)
+                response = requests.post(url, headers=headers, json=payload)
+                print("::::::::::::::::::::::::::::::::::::::::::::::RESPONSE::::::::::::::::::::::::::::::::::::::::::::::::::::", response)
+
+        except Exception as e:
+            print(f"Error during request: {e}")
+           
+
+
+
+
+
+            
+
+
+
+
+
+
+
+
+
+    def tripletex_import_saleorder(self):
+        print("::::::::::::::::::::PRODUCT IMPORT::::::::::::::::::::::::::")
+        url = 'https://api.tripletex.io/v2/order'
+        orderDateFrom = self.orderDateFrom
+        orderDateTo = self.orderDateTo
+        date1 = orderDateFrom.strftime('%Y-%m-%d')
+        date2 = orderDateTo.strftime('%Y-%m-%d')
+        from_count =  self.from_count
+        count = self.count
+
         consumer_token = self.consumer_token 
         employee_token = self.employee_token
         company_id = '12841878'
@@ -186,63 +320,286 @@ class ResCompany(models.Model):
             'consumerToken': consumer_token,
             'employeeToken': employee_token
         }
+        print(":::::::::::::::::::::::::::::::::::::::::::HEADERS:::::::::::::::::::::::::::::::::::::::::::::::::", headers)
+
+
+        params = {
+            'orderDateFrom': date1, 
+            'orderDateTo': date2, 
+            'from': from_count, 
+            'count': count 
+        }
+
+        print(":::::::::::::::::::::::::::::::::::::::::::PARAMS:::::::::::::::::::::::::::::::::::::::::::::::::", params)
+        
+        
+
 
         try:
-            # response = requests.post(url, headers=headers)
-            response = requests.request('POST', url=url, data=parsed_dict, headers=headers)
-
-            print(":::::::::::::::::::::::::::::::::::::::::::RESPONSE:::::::::::::::::::::::::::::::::::::::::::::::::", response)
+            response = requests.get(url, headers=headers, params=params)
+            print(":::::::::::::::::::::::::::::::::::::::::::RESPONSE:::::::::::::::::::::::::::::::::::::::::::::::::", response.text)
 
             if response.status_code == 200:
-                json_data = response.json()
-                print("::::::::::::::::::::::::::::::::::::::::::::::JSON::::::::::::::::::::::::::::::::::::::::::", json_data)
-                self.process_export_tripletex_products(json_data['values'])
+                print(":::::::::::::::::::::::::::::::::::::::::::SUCCESS:::::::::::::::::::::::::::::::::::::::::::::::::")
+                parsed_data = response.json()
+                print("::::::::::::::::::::::::::::::::::::::::::::::JSON::::::::::::::::::::::::::::::::::::::::::", parsed_data)
+                self.process_tripletex_import_saleorders(parsed_data['values'])
 
             else:
-                print(f"Error: {response.status_code}, {response.text}")
                 print("::::::::::::::::::::::::::::::::::::::::::::::ELSE RESPONSE::::::::::::::::::::::::::::::::::::::::::")
 
 
         except Exception as e:
             print(f"Error during request: {e}")
-            
-            
-            
-                
+
+
+
+
+    def get_sale_order_line(self,order_line):
+        print(":::::::::::::::::order_line in GET SALE ORDER LINE Fn::::::::::::",order_line)
+        url = "https://"+order_line
+        print(":::::::::::::::;;:::::::::::::::::::::::::::::::::::::URL:::::::::::::::::::::::::",url)
+        consumer_token = self.consumer_token 
+        employee_token = self.employee_token  
+        company_id = '12841878' 
+        session_token = self.token  
+        auth_token = f'{company_id}:{session_token}'
+        encoded_token = base64.b64encode(auth_token.encode('utf-8')).decode('utf-8')
+
+        headers = {
+                'Accept': 'application/json',
+                'Authorization': f'Basic {encoded_token}',
+                'consumerToken': consumer_token,
+                'employeeToken': employee_token
+        }
+        response = requests.get(url, headers=headers)
+        print("::::::::::::::::::RESPONSE GET SALE ORDER LINE::::::::::::::::",response.text)
+
+
+
 
     @api.model
-    def process_export_tripletex_products(self, tripletex_products):
-        print("::::::::::::::::::::::::::::::::::::::::::::SECOND_TRIPLEX_PRODUCT_FUNCTION::::::::::::::::::::::::::::::::::::::::::::::::::")
-        for product in tripletex_products:
-            print("::::::::::::::::::::::::::::::::::::::::::::PRODUCT::::::::::::::::::::::::::::::::::::::::::::::::::",product)
-            product_data = {
-                'name': f"{product.post('name', '')}",
-                # 'tripletex_product_id': product.get('id'),
-                # 'list_price': product.get('priceIncludingVatCurrency'),
-                # 'standard_price': product.get('costExcludingVatCurrency'),
-                # 'weight': product.get('weight'),
-                # 'weight_uom_name': product.get('weightUnit'),
-                # 'volume': product.get('volume'),
-                # 'volume_uom_name': product.get('volumeUnit'),
-                
+    def process_tripletex_import_saleorders(self, tripletex_saleorders):
+        print("::::::::::::::::::::::::::::::::::::::::::::::SECOND FN::::::::::::::::::::::::::::::::::::::::::")
+
+        for sale in tripletex_saleorders:
+            print("::::::::::::::::::::::::::::::::::::::::::::::SALE::::::::::::::::::::::::::::::::::::::::::",sale)
+            customer_id = sale.get("customer", {}).get("id")
+            customer_detail_url = sale.get("customer",{}).get("url")
+            
+            order_lines = sale.get("orderLines", [])
+            order_lines_urls = [order_line.get("url") for order_line in order_lines]
+            
+            print(":::::::::::::::::::::::::::::::::::::::::SALE ORDER LINE URLS::::::::::::::::::::::::::::::::::::",order_lines_urls)
+            
+            for order_line in order_lines_urls:                
+                print("::::::::::::::::::::::::::::::::::ORDER LINE:::::::::::::::::::::::::::::::::::",order_line)                
+                self.get_sale_order_line(order_line)
+
+            print("::::::::::::::::::::::::::::::::::::::::::::::CUSTOMER URL::::::::::::::::::::::::::::::::::::::::::",customer_detail_url)
+            print("::::::::::::::::::::::::::::::::::::::::::::::PRODUCT LINE URL::::::::::::::::::::::::::::::::::::::::::",product_line_url)
+
+            self.env['res.partner']
+
+            sale_order_data = {        
+                # 'partner_id': sale.get('id'),            
+                'date_order': sale.get('orderDate'),
+                'tripletex_sale_order_id': sale.get('id'),                
             }
-            print("::::::::::::::::::::::::::::::::::::::::::::PRODUCT::::::::::::::::::::::::::::::::::::::::::::::::::",product_data)
+            print("::::::::::::::::::::::::::::::::::::::::::::::SALE_ORDER_DATA_DICT::::::::::::::::::::::::::::::::::::::::::",sale_order_data)
 
-            # product_search = self.env['product.template'].search([('tripletex_product_id', '=', product_data['tripletex_product_id'])])
-            # product_vendor_search = self.env['product.supplierinfo'].search([('partner_id', '=' product_data['partner_id'])])
 
-            # if product_search:
-                # product_search.write(product_data)
-                # print("::::::::::::::::::::::::::::::::::::::::::::PRODUCT_DATA_WRITE::::::::::::::::::::::::::::::::::::::::::::::::::",product_data)
-            # if product_vendor_search:
-            #     product_vendor_search.write(product_data)
-            #     print("::::::::::::::::::::::::::::::::::::::::::::PRODUCT_VENDOR_WRITE::::::::::::::::::::::::::::::::::::::::::::::::::",product_data)
-            # else:
-                # self.env['product.template'].create(product_data)
-                # print("::::::::::::::::::::::::::::::::::::::::::::PRODUCT_DATA_CREATE::::::::::::::::::::::::::::::::::::::::::::::::::",product_data)
-                # self.env['product.supplierinfo'].create(product_data)
-                # print("::::::::::::::::::::::::::::::::::::::::::::PRODUCT_DATA_CREATE::::::::::::::::::::::::::::::::::::::::::::::::::",product_data)
-                    
+            partner_data = {
+                'tripletex_contact_id' : customer_id,
+                'name' : sale.get('customerName')
+            }
+
+            # order_line_data = {
+            #     'product_template_id' : order_line.get('orderLines')
+            # }
+            # print("::::::::::::::::::::::::::::::::::::::::::::::ORDER_LINE_DATA::::::::::::::::::::::::::::::::::::::::::",order_line_data)
+
+
+            print("::::::::::::::::::::::::::::::::::::::::::::::PARTNER_DATA_DICT::::::::::::::::::::::::::::::::::::::::::",partner_data)
+
+
+            
+            order = self.env['sale.order'].search([('tripletex_sale_order_id', '=', sale_order_data['tripletex_sale_order_id'])])
+            print("::::::::::::::::::::::::::::::::::::::::::::::ORDER VALIDATION USING TRIPLETEX ID::::::::::::::::::::::::::::::::::::::::::",order)
+            
+            res_partner = self.env['res.partner'].sudo().search([('tripletex_contact_id', '=', customer_id)],limit=1)
+            print("::::::::::::::::::::::::::::::::::::::::::::::RES PARTNER SEARCHING::::::::::::::::::::::::::::::::::::::::::",res_partner)
+
+
+            if not res_partner:
+                print("::::::::::::::::::::::::::::::::::NOT RES PARTNER:::::::::::::::::::::::::::::::::::")
+                self.create_customer_from_sale_order(customer_detail_url)
+                print("((((((((((((((((((((((((((((((((((((((((((((((((1))))))))))))))))))))))))))))))))))))))))))))))))")
+                self.create_saleorderline_product(product_line_url)
+                print("((((((((((((((((((((((((((((((((((((((((((((((((2))))))))))))))))))))))))))))))))))))))))))))))))")
+
+
+                res_partner = self.env['res.partner'].sudo().search([('tripletex_contact_id', '=', customer_id)],limit=1)
+                partner_id= res_partner.id
+            else:
+                partner_id = res_partner.id 
+                print("::::::::::::::::::::::::::::::::::::::::::::::CREATED WRITE::::::::::::::::::::::::::::::::::::::::::",partner_id)
+
+            sale_order_data['partner_id']=partner_id     
+            if order:
+                print("::::::::::::::::::::::::::::::::::::::::::::::WRITE::::::::::::::::::::::::::::::::::::::::::")
+                order.write(sale_order_data)
+            else: 
+                create_order = self.env['sale.order'].create(sale_order_data)
+                print("::::::::::::::::::::::::::::::::::::::::::::::CREATE::::::::::::::::::::::::::::::::::::::::::",create_order)
+
+
+    def create_customer_from_sale_order(self,customer_detail_url):
+        url = "https://"+customer_detail_url
+        print(":::::::::::::::::::::::::::::::::::::::::::::CREATE URL::::::::::::::::::::::::::::::::::",url)
+        consumer_token = self.consumer_token 
+        employee_token = self.employee_token  
+        company_id = '12841878' 
+        session_token = self.token  
+
+       
+        auth_token = f'{company_id}:{session_token}'
+        print(":::::::::::::::::::::::::::::::::::::::::::::AUTH TOKEN CUSTOMER::::::::::::::::::::::::::::::::::",auth_token)
+
+        encoded_token = base64.b64encode(auth_token.encode('utf-8')).decode('utf-8')
+        print(":::::::::::::::::::::::::::::::::::::::::::::ENCODED TOKEN CUSTOMER::::::::::::::::::::::::::::::::::",encoded_token)
+
+
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': f'Basic {encoded_token}',
+            'consumerToken': consumer_token,
+            'employeeToken': employee_token
+        }
+        print(":::::::::::::::::::::::::::::::::::::::::::::HEADERS CUSTOMER::::::::::::::::::::::::::::::::::",headers)
+
+
+        try:
+            print(":::::::::::::::::::::::::::::::::::::::::::::TRY CUSTOMER::::::::::::::::::::::::::::::::::")
+            response = requests.get(url, headers=headers)
+            print(":::::::::::::::::::::::::::::::::::::::::::::::CREATE SALE ORDER CUSTOMER RESPONSE::::::::::::::::::::::::::::::",response.text)
+
+            if response.status_code == 200:
+                print(":::::::::::::::::::::::::::::::::::::::::::::::response.status_code == 200::::::::::::::::::::::::::::::")  
+                json_data = response.json()
+                print(":::::::::::::::::::::::::::::::::::::::::::::::JSON DATA  OF CUSTOMER SALEORDER::::::::::::::::::::::::::::::",json_data)  
+                # self.process_tripletex_sale_order_create_customer(json_data['value'])
+
+            else:
+                print(f"Error: {response.status_code}, {response.text}")
+
+        except Exception as e:
+            print(f"Error during request: {e}")
+                
+
+
+
+
+
+    def create_saleorderline_product(self,product_line_url):
+        url = "https://"+product_line_url
+        print(":::::::::::::::::::::::::::::::::::::::::::::CREATE PRODUCT LINE URL::::::::::::::::::::::::::::::::::",url)
+        consumer_token = self.consumer_token 
+        employee_token = self.employee_token  
+        company_id = '12841878' 
+        session_token = self.token  
+
+       
+        auth_token = f'{company_id}:{session_token}'
+        print(":::::::::::::::::::::::::::::::::::::::::::::AUTH TOKEN SALE ORDER::::::::::::::::::::::::::::::::::",auth_token)
+
+        encoded_token = base64.b64encode(auth_token.encode('utf-8')).decode('utf-8')
+        print(":::::::::::::::::::::::::::::::::::::::::::::ENCODED TOKEN SALE ORDER::::::::::::::::::::::::::::::::::",encoded_token)
+
+
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': f'Basic {encoded_token}',
+            'consumerToken': consumer_token,
+            'employeeToken': employee_token
+        }
+        print(":::::::::::::::::::::::::::::::::::::::::::::HEADERS SALE ORDER::::::::::::::::::::::::::::::::::",headers)
+
+
+        try:
+            print(":::::::::::::::::::::::::::::::::::::::::::::TRY SALE ORDER LINE::::::::::::::::::::::::::::::::::")
+            response = requests.get(url, headers=headers)
+            print(":::::::::::::::::::::::::::::::::::::::::::::::CREATE SALE ORDER PRODUCT LINE RESPONSE::::::::::::::::::::::::::::::",response.text)
+
+            if response.status_code == 200:
+                print(":::::::::::::::::::::::::::::::::::::::::::::::response.status_code == 200 ::::::::::::::::::::::::::::::")  
+                json_data = response.json()
+                print(":::::::::::::::::::::::::::::::::::::::::::::::JSON DATA  OF SALE ORDER LINE SALEORDER::::::::::::::::::::::::::::::",json_data)  
+                # self.process_tripletex_sale_order_create_customer(json_data['value'])
+
+            else:
+                print(f"Error: {response.status_code}, {response.text}")
+
+        except Exception as e:
+            print(f"Error during request: {e}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+        
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     
@@ -268,121 +625,4 @@ class ResCompany(models.Model):
 
 
 
-    # # @api.model
-    # def tripletex_export_products_main(self):
-    #     product_search = self.env['product.template'].search([])
-    #     print("::::::::::::::::::::::::::::::::::PRODUCT SEARCH:::::::::::::::::::::::::::::::::::::::::::::::::",product_search)
 
-    #     for products in product_search:
-    #         print("::::::::::::::::::::::::::::::::::SUB FUNCTION:::::::::::::::::::::::::::::::::::::::::::::::::")
-    #         self.triplex_export_product_sub(products)
-        
-        
-    # def triplex_export_product_sub(self, products):
-    #     url = 'https://tripletex.no/v2/contact'
-        
-    #     consumer_token = self.consumer_token
-    #     print(":::::::::::::::::::::::::::::::::CONSUMER TOKEN::::::::::::::::::::::::::::::::::::::::::",consumer_token)
-    #     employee_token = self.employee_token
-    #     print("::::::::::::::::::::::::::::::::::::::::::::EMPLOYEE TOKEN:::::::::::::::::::::::::::::::::::::::::::::::::::",employee_token)
-    #     tripletex_token = self.token
-    #     print("::::::::::::::::::::::::::::::::::::::::::::::::TRIPLETEX TOKEN:::::::::::::::::::::::::::::::::::::::::;",tripletex_token)
-    #     company_id = '98765'
-        
-    #     auth_token = f'{company_id}:{tripletex_token}'
-    #     print(":::::::::::::::::::::::::::::::::::::::::::::::AUTH TOKEN:::::::::::::::::::::::::::::::::::::::::::::::::::",auth_token)
-    #     encoded_token = base64.b64encode(auth_token.encode('utf-8')).decode('utf-8')
-    #     print("::::::::::::::::::::::::::::::::::::::::::::::::::ENCODED TOKEN:::::::::::::::::::::::::::::::::::::::::::::::::::::::",encoded_token)
-
-    #     headers = {
-    #         'Accept': 'application/json',
-    #         'Authorization': f'Tripletex {encoded_token}',
-    #         'Content-Type': 'application/json; charset=utf-8',
-    #         'consumerToken': consumer_token,
-    #         'employeeToken': employee_token
-    #     }
-    #     print("::::::::::::::::::::::::::::::::::::::::::::::::::::HEADERS:::::::::::::::::::::::::::::::::::::::::::::::::::::::",headers)
-
-    #     # Create the payload based on your Tripletex contact structure
-    #     payload = {
-    #         "id": 0,
-    #         "version": 0,
-    #         "name": products.name,
-            
-    #     }
-    #     print(":::::::::::::::::::::::::::::::::::::::::::::::::::::PAYLOAD:::::::::::::::::::::::::::::::::::::::::::::::::::::::",payload)
-
-
-    #     try:
-    #         response = requests.post(url, headers=headers, json=payload)
-    #         print("::::::::::::::::::::::::::::::::::::::::::::::::::RESPONSE::::::::::::::::::::::::::::::::::::::::::::::::::::::",response)
-
-    #         if response.status_code == 200:
-    #             json_data = response.json()
-    #             print("::::::::::::::::::::::::::::::::::::::::::::::::::JSON DATA::::::::::::::::::::::::::::::::::::::::::::::::::::::",json_data)
-    #             self.process_tripletex_response(json_data)  
-    #         else:
-    #             print("::::::::::::::::::::::::::::::::::::::::::::::::::JSON DATA ELSE PART::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-    #             print(f"Error: {response.status_code}, {response.text}")
-
-    #     except Exception as e:
-    #         print(f"Error during request: {e}")
-
-    # def process_tripletex_response(self, response):
-    #     print(":::::::::::::::::::::::::^^^^^^^^^<^>::::process_tripletex_response:::::::::::::::^^^^^^^^^^^^^^^^^^^::::::::::::::::::")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#############################################from xero # #########################
-
-
-
-    # @api.model
-    # def create_main_customer_in_xero(self, con, xero_config):
-    #     if con:
-    #         vals = con.prepare_customer_export_dict()
-    #         parsed_dict = json.dumps(vals)
-    #         token = ''
-    #         if xero_config.xero_oauth_token:
-    #             token = xero_config.xero_oauth_token
-
-    #         if not token:
-    #             raise ValidationError('Token not found,Authentication Unsuccessful Please check your connection!!')
-
-    #         headers = self.get_head()
-
-    #         if token:
-    #             protected_url = 'https://api.xero.com/api.xro/2.0/Contacts'
-    #             data = requests.request('POST', url=protected_url, data=parsed_dict, headers=headers)
-    #             if data.status_code == 200:
-    #                 response_data = json.loads(data.text)
-    #                 if response_data.get('Contacts'):
-    #                     con.xero_cust_id = response_data.get('Contacts')[0].get('ContactID')
-    #                     _logger.info("\nExported Contact : {} {}".format(con, con.name))
-    #                     child_ids_all = self.search(
-    #                         [('parent_id', '=', con.id), ('company_id', '=', xero_config.id)])
-    #                     if child_ids_all:
-    #                         for child in child_ids_all:
-    #                             child.xero_cust_id = ''
-
-    #                     child_ids = self.search([('parent_id', '=', con.id), ('company_id', '=', xero_config.id)],
-    #                                             limit=5)
-    #                     if child_ids:
-    #                         for child in child_ids:
-    #                             child.xero_cust_id = response_data.get('Contacts')[0].get('ContactID')
-    #                             _logger.info("\nExported Sub-Contact : {} {}".format(child, child.name))
