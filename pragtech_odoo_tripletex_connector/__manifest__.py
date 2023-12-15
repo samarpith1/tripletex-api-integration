@@ -18,7 +18,7 @@ Long description of module's purpose
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base','account','mail','sale','purchase','contacts'],
+    'depends': ['base','account','mail','contacts','sale','purchase'],
 
     # always loaded
     'data': [
@@ -26,10 +26,12 @@ Long description of module's purpose
         'wizard/session_token_create.xml',
         'views/res_company_inherit_view.xml',
         'views/session_token_view.xml',
+        'views/product_template_inherit_views.xml',
         'views/menu.xml',
         'views/res_partner_inherit_view.xml',
         'views/chart_of_account_inherit_view.xml',
         'views/purchase_order_inherit_view.xml',
+        'views/sale_order_inherit_view.xml',
 
     ],
     # only loaded in demonstration mode

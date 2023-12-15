@@ -657,19 +657,9 @@ class ResCompany(models.Model):
                 'name': f"{tripletex_product.get('name', '')}",
                 'product_qty': tripletex_product.get('number'),
                 'description': str(tripletex_product.get('description', '')),
-                'tripletex_product_id': tripletex_product.get('id')
+                
            }
-            print(":::::::::::::::::::::::::::product_data::::::::::::::::::::::::::::::::",product_data)
-           
-            products = self.env['product.template'].search([('tripletex_product_id', '=', product_data['tripletex_product_id'])])
-            if products:
-                        products.write(product_data)
-                   
-                    
-            else:
-                    products = self.env['product.template'].create(product_data)
-                    
-                    return products  
+            
             
             
         except Exception as e:
