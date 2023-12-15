@@ -85,16 +85,50 @@
                                             class="oe_highlight" icon="fa-arrow-circle-down" />
                                     </div>
                                     <group />
-                                </group>
+                                  </group> 
                                 <separator/>
                                 <group class="paddingbutton">
                                     <div>
-                                        <button string="1-Import Taxes"
-                                            name="tripletex_import_taxes" type="object"
+                                        <button string="1-Import Chart of Accounts"
+                                            name="tripletex_import_chart_of_accounts" type="object"
                                             class="oe_highlight" icon="fa-arrow-circle-down" />
                                     </div>
                                     <group />
                                     </group>
+                                    <separator />
+                                    <group class="paddingbutton">
+                                        <div>
+                                            <button string="1-Import Vendors"
+                                                name="tripletex_import_supplier" type="object"
+                                                class="oe_highlight" icon="fa-arrow-circle-down" />
+                                        </div>
+                                        <group />
+                                        </group>
+                                        <separator />
+                                        <group class="paddingbutton">
+                                            <div>
+                                                <button string="1-Import Purchase Orders"
+                                                    name="import_purchase_orders" type="object"
+                                                    class="oe_highlight" icon="fa-arrow-circle-down" />
+                                            </div>
+                                            <group />
+                                            </group>
+                                            <separator />
+                                            <group>
+                                                <field name="deliveryDateFrom"/>
+                                            </group>
+                                            <group>
+                                                <field name="deliveryDateTo"/>
+                                            </group>
+                                            <group>
+                                                <field name="from_count"/>
+                                            </group>
+                                            <group>
+                                                <field name="count"/>
+                                            </group>
+
+
+
                                 
                             </page>
                             <page name="initial_sync" string="Export">
@@ -102,6 +136,27 @@
                                     <div>
                                         <button string="1-Export Contacts"
                                             name="export_contacts_to_tripletex" type="object"
+                                            class="oe_highlight" icon="fa-arrow-circle-down" />
+                                    </div>
+                                    <group />
+                                    <separator />
+
+                                </group>
+
+                                <group class="paddingbutton">
+                                    <div>
+                                        <button string="1-Export Chart of Accounts"
+                                            name="export_chart_of_accounts_to_tripletex" type="object"
+                                            class="oe_highlight" icon="fa-arrow-circle-down" />
+                                    </div>
+                                    <group />
+                                    <separator />
+
+                                </group>
+                                <group class="paddingbutton">
+                                    <div>
+                                        <button string="1-Export Suppliers"
+                                            name="export_supplier_to_tripletex" type="object"
                                             class="oe_highlight" icon="fa-arrow-circle-down" />
                                     </div>
                                     <group />

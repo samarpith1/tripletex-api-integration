@@ -10,6 +10,9 @@
                 <xpath expr="//field[@name='vat']" position="after">
                     <field name="tripletex_contact_id"/>
                 </xpath>
+                <xpath expr="//field[@name='tripletex_contact_id']" position="after">
+                    <field name="tripletex_supplier_id"/>
+                </xpath>
 
     
         
