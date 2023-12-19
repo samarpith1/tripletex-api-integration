@@ -22,6 +22,11 @@ class ResCompany(models.Model):
     deliveryDateTo = fields.Date(string='Delivery Date To')
     from_count = fields.Char(string='From Count')
     count = fields.Char(string='Count')
+    select_import = fields.Selection(
+        [('chart of Accounts', 'Chart Of Accounts'), ('contacts', 'Contacts'), ('vendors', 'Vendors'),('products', 'Products'),('purchase_orders', 'Purchase Orders')],
+        string='Select_import',
+        
+    )
     
     
     
@@ -378,10 +383,10 @@ class ResCompany(models.Model):
 
             try:
                 response = requests.get(url, headers=headers)
-                print("::::::::::::::::response::::::",response.text)
+                print(":::::::::::::vendor :::response::::::",response.text)
 
                 if response.status_code == 200:
-                    print(":::response::::::::::::::::::::::::::::::::::::::::::::::::::::",response)
+                    print(":::response::::::::::::::::::::::::::::::::::::::::::::::::::::",response.content)
                     
                     json_data = response.json()
                     self.process_tripletex_suppliers(json_data['values'])
@@ -521,11 +526,15 @@ class ResCompany(models.Model):
         
         try:
             response = requests.get(url, headers=headers, params=params)
+            print("response----------------->>>>>>>>>>>>>",response)
            
 
             if response.status_code == 200:
+                print(":::::::::::::::::::;response::::::::::",response.content)
+                print("json=============================",response.json)
                
                 parsed_data = response.json()
+                print(":::::::::::::parsed_data",parsed_data)
                 
                 self.process_tripletex_import_purchaseorders(parsed_data['values'])
         
@@ -534,8 +543,7 @@ class ResCompany(models.Model):
 
        
                     
-                            
-            
+               
        
           
     def create_new_supplier(self,supplier_detail):
@@ -594,41 +602,57 @@ class ResCompany(models.Model):
                 
     
     
-            # if response.status_code == 200:
-                
-                
-        #         json_data = response.json()
-        #         print(":::::::::::::::::::::::::::json_data::::::::::::::::::::::::::::::::",json_data)
-        #         tripletex_product = json_data['value']
-        #         print(":::::::::::::::::::::::::::tripletex_product::::::::::::::::::::::::::::::::",tripletex_product)
-        #         product_data = {
-        #         'name': f"{tripletex_product.get('name', '')}",
-        #         'product_qty': tripletex_product.get('number'),
-        #         'description': str(tripletex_product.get('description', '')),
-        #         'price_unit': tripletex_product.get('priceIncludingVatCurrency', ''),
-        #         'tripletex_product_id': tripletex_product.get('id'),
-        #         }
-                
-        #         products = self.env['purchase.order'].search([('tripletex_product_id', '=', product_data['tripletex_product_id'])])
-        #     if products:
-        #             products.write(product_data)
-                   
-                    
-        #     else:
-        #             products = self.env['purchase.order'].create(product_data)
-                    
-        #             return products  
-            
-        # except Exception as e:
-        #         print(f"Error during request: {e}")
+         
         
-   
+    
+    @api.model
+    def get_purchase_order_name(self,tripletex_product_url):
+        url = "https://"+tripletex_product_url
+        print(":::::::::::::::creating product:::::::::::::::::::::::::",url)
+        consumer_token = self.consumer_token 
+        employee_token = self.employee_token  
+        company_id = '12841878' 
+        session_token = self.token  
+        auth_token = f'{company_id}:{session_token}'
+        encoded_token = base64.b64encode(auth_token.encode('utf-8')).decode('utf-8')
+
+        headers = {
+                'Accept': 'application/json',
+                'Authorization': f'Basic {encoded_token}',
+                'consumerToken': consumer_token,
+                'employeeToken': employee_token
+        }     
+
+        try:
+            response = requests.get(url, headers=headers)           
             
+            if response.status_code == 200:     
+                print("yes=========================")           
+                json_data = response.json()
+                tripletex_product_data = json_data['value']
+                print("data=================",tripletex_product_data)
+                product_data = {
+                    'name': tripletex_product_data.get('name', ''),
+                    'tripletex_product_id': tripletex_product_data.get('id'),
+                }
+                
+                product_id = self.env['product.template'].sudo().create(product_data)
+                print("::::::::::product created:::::::::",product_id)
+                return product_id
+                
+            
+        except Exception as e:
+                print(f"Error during request: {e}")   
+    
+            
+    @api.model   
+    def get_purchase_order_line(self,order_line,create_purchase_order):
         
-    def get_purchase_order_line(self,order_line):
         print(":::::::::::::::::order_line::::::::::::",order_line)
+        print(":::::::::::::::::purchase order::::::::::::",create_purchase_order)
+
         url = "https://"+order_line
-        print(":::::::::::::::;;:::::::::::::::::::::::::::::::::::::order_lines_str23422:::::::::::::::::::::::::",url)
+        print(":::::::::::::::;;:::::::order line url:::::::::::::::::::::::::",url)
         consumer_token = self.consumer_token 
         employee_token = self.employee_token  
         company_id = '12841878' 
@@ -647,20 +671,31 @@ class ResCompany(models.Model):
 
         try:
             response = requests.get(url, headers=headers)
-            print("::::::::::::::::::response12222222222::::::::::::::::",response.text)
             json_data = response.json()
-            print(":::::::::::::::::::::::::::json_data::::::::::::::::::::::::::::::::",json_data)
             tripletex_product = json_data['value']
-            print(":::::::::::::::::::::::::::tripletex_product::::::::::::::::::::::::::::::::",tripletex_product)
-           
-            product_data = {
-                'name': f"{tripletex_product.get('name', '')}",
-                'product_qty': tripletex_product.get('number'),
-                'description': str(tripletex_product.get('description', '')),
+            print(":::::::::::::::::::::::::::order_line value::::::::::::::::::::::",tripletex_product)
+            tripletex_product_id = tripletex_product['product']['id']
+            print(":::::::::::::::::::tripletex_product_id:::::::::::::",tripletex_product_id)
+            tripletex_product_url = tripletex_product['product']['url']
+            print(":::::::::::::::::::tripletex_product_url:::::::::::::",tripletex_product_url)
+            
+            
+            product_id = self.env['product.template'].search([('tripletex_product_id', '=', tripletex_product_id)])
+            if not product_id:
+                product_id = self.get_purchase_order_name(tripletex_product_url)
+                print(":::::::::;product_detail:::::::",product_id)
+            
+            if product_id:
+                order_line_data = {
+                        'product_id': product_id.product_variant_id.id,
+                        'product_qty': tripletex_product['count'],
+                        # 'price_unit': price_unit,
+                        'order_id':create_purchase_order.id
+                        
+                }
                 
-           }
-            
-            
+                order_line = self.env['purchase.order.line'].create(order_line_data)
+                print("::::::::::::::::;order_line created::::::::::::::::",order_line)
             
         except Exception as e:
                 print(f"Error during request: {e}")   
@@ -671,55 +706,45 @@ class ResCompany(models.Model):
     @api.model
     def process_tripletex_import_purchaseorders(self, tripletex_purchaseorders):
         for purchase in tripletex_purchaseorders:
-            print(":::::::::::::purchase::::::::::::",purchase)        
+            print(":::::::::::::importing::::::::::::",purchase)        
             supplier_id = purchase.get("supplier", {}).get("id")            
             supplier_detail = purchase.get("supplier",{}).get("url")           
             order_lines = purchase.get("orderLines", [])
             order_lines_urls = [order_line.get("url") for order_line in order_lines]            
-            print(":::::::::::::::::order_lines_urls::::::::::::::::::::::::",order_lines_urls)            
-            for order_line in order_lines_urls:                
-                self.get_purchase_order_line(order_line)
+            print(":::::::::::::::::order_lines_urls::::::::::::::::::::::::",order_lines_urls)
+                         
+            order_line_list = []
+            purchase_order_data={}
+            partner = self.create_new_supplier(supplier_detail)
+            print(":::::::::::::::::partner::::::::::::::::::::::::",partner)
+            purchase_orders = self.env['purchase.order'].search([('tripletex_purchase_order_id', '=', purchase.get('id'))])
+            print(":::::::::::::::::purchaseorders::::::::::::::::::::::::",purchase_orders)
+            purchase_order_data = {        
+                'partner_id': partner.id,           
+                'date_order': purchase.get('deliveryDate'),
+                'tripletex_purchase_order_id': purchase.get('id'),
+                
+                
+                              
+            }
+            print(":::::::::::::::::purchase_order_data::::::::::::::::::::::::",purchase_order_data)
+            if not purchase_orders:
+                print("_________________________purchaaseorders23456789___________",purchase_orders)
+                create_purchase_order = self.env['purchase.order'].create(purchase_order_data)
+                print("::::::::::::::::::::::partner:::::::::::",create_purchase_order)
+                for order_line in order_lines_urls:  
+                    print("order_line=======================",order_line)              
+                    result1=self.get_purchase_order_line(order_line,create_purchase_order)
+                    print("::::::::::::::;result1")
+                    
+                    
+               
             
+       
             
-            
-            
-            
-            
-            
-            
-            # for order_line_data in order_lines_ids:
-            #     order_detail = order_line_data.get("url")
-            
-            
-            
-            # partner = self.create_new_supplier(supplier_detail)
-            # product = self.create_new_product(order_lines_str)
                 
             
 
-            # purchase_order_data = {        
-            #     'partner_id': partner.id,          
-            #     'date_order': purchase.get('deliveryDate'),
-            #     'tripletex_purchase_order_id': purchase.get('id')              
-            # }
-            
-            # purchase_order_lines = {
-            #     'product_id': product.id,
-            #     'name': product.get('name'),
-            #     'product_qty':product.get('quantityReceived'),
-            #     'price_unit': product.get('priceIncludingVatCurrency'),
-            #     'price_subtotal': product.get('amountIncludingVatCurrency')
-                
-            # }
-            
         
             
-            # purchase_orders = self.env['purchase.order'].search([('tripletex_purchase_order_id', '=', purchase_order_data['tripletex_purchase_order_id'])])
-            # purchase_order_lines = self.env['purchase.order.line'].search([('product_id','=',purchase_order_lines['product_id'])])
-            
-            #if purchase_orders and purchase_order_lines:
-            
-            #     # purchase_orders.write(purchase_order_data)
-            # else: 
-            #     create_purchase_order = self.env['purchase.order'].create(purchase_order_data)
-                
+        
