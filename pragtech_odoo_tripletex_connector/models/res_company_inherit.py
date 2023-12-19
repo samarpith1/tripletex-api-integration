@@ -640,11 +640,15 @@ class ResCompany(models.Model):
                 print("::::::::::product created:::::::::",product_id)
                 return product_id
                 
+
             
         except Exception as e:
                 print(f"Error during request: {e}")   
     
             
+ 
+    
+
     @api.model   
     def get_purchase_order_line(self,order_line,create_purchase_order):
         

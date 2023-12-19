@@ -53,6 +53,7 @@
                                 <group>
                                 <field name="select_import"></field>
                                 </group>
+
                                
                                 <group class="paddingbutton">
                                     <div>
@@ -117,8 +118,8 @@
                                 
                                 
 
-                               
 
+            
                             </page>
                             <page name="initial_sync" string="Export">
                                 <group class="paddingbutton">
@@ -143,6 +144,9 @@
 
                                
                                     <separator />
+
+                                   
+
 
                                 </group>
                                 <group class="paddingbutton">
