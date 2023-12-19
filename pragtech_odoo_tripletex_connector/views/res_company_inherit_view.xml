@@ -50,9 +50,9 @@
                         <notebook>
                             <page name="initial_sync" string="Import">
                                 <separator/>
-                                <group>
+                                <!-- <group>
                                 <field name="select_import"></field>
-                                </group>
+                                </group> -->
 
                                
                                 <group class="paddingbutton">

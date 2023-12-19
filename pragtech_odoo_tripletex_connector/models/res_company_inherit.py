@@ -22,11 +22,11 @@ class ResCompany(models.Model):
     deliveryDateTo = fields.Date(string='Delivery Date To')
     from_count = fields.Char(string='From Count')
     count = fields.Char(string='Count')
-    select_import = fields.Selection(
-        [('chart of Accounts', 'Chart Of Accounts'), ('contacts', 'Contacts'), ('vendors', 'Vendors'),('products', 'Products'),('purchase_orders', 'Purchase Orders')],
-        string='Select_import',
+    # select_import = fields.Selection(
+    #     [('chart of Accounts', 'Chart Of Accounts'), ('contacts', 'Contacts'), ('vendors', 'Vendors'),('products', 'Products'),('purchase_orders', 'Purchase Orders')],
+    #     string='Select_import',
         
-    )
+    # )
     
     
     
@@ -128,12 +128,14 @@ class ResCompany(models.Model):
                 }
                 
                 payload = {
-                    "id": 0,
-                    "version": 0,
+                    # "id": 0,
+                    # "version": 0,
                     "firstName": partner.name,
                     "email": partner.email,
-                    
+                    "phoneNumberMobile":partner.mobile,
+                    "phoneNumberWork":partner.phone,
                 }
+                
                 print("::::::::::::::::::::payload::::::::::", payload)
                 if not partner.tripletex_contact_id:
                         response = requests.post(url, headers=headers, json=payload)
@@ -297,12 +299,6 @@ class ResCompany(models.Model):
             #             }
             chart_of_accounts = self.env['account.account'].search([('tripletex_account_id', '=', False)])
             for chart_of_account in chart_of_accounts:
-               
-                
-                
-            
-           
-               
        
                 url = 'https://api.tripletex.io/v2/ledger/account'
                 consumer_token = self.consumer_token 
@@ -312,9 +308,7 @@ class ResCompany(models.Model):
 
             
                 auth_token = f'{company_id}:{session_token}'
-                print("::::::::::::::::::;authtoken::::",auth_token)
                 encoded_token = base64.b64encode(auth_token.encode('utf-8')).decode('utf-8')
-                print(":::::::::::::encoded_token::::",encoded_token)
 
                 headers = {
                     'Accept': 'application/json',
@@ -322,24 +316,25 @@ class ResCompany(models.Model):
                     'consumerToken': consumer_token,
                     'employeeToken': employee_token
                 }
-                print("::::::::::::::::headers::::::::",headers)
+                print("::::::::::::::::coa::::::::",chart_of_account.name,chart_of_account.code)
                 
                 payload = {
                     
                     # "id": chart_of_account.tripletex_account_id,
-                    "version": 0,
+                    # "version": 0,
                     "name": chart_of_account.name,
-                    "number": chart_of_account.code,
+                    "number": int(chart_of_account.code),
+                    
                     
                     
                 }
-                print("::::::::::::::::::::payload::::::::::",payload)
                 if not chart_of_account.tripletex_account_id:
                     response = requests.post(url, headers=headers, json=payload)
                     print(f": {response.status_code}, {response.text}")
+                    print("res========================",response.status_code)
                     if response.status_code == 201:
                         json_data = response.json()
-                        print("::::::::::::::::sddsdfs",json_data)
+                        print("::::::::::::::::json",json_data)
                         chart_of_account.tripletex_account_id = json_data.get('value').get('id')
                         print("::::::::sdfdsdffgh:::::::::::",chart_of_account.tripletex_account_id)
                         
@@ -463,7 +458,7 @@ class ResCompany(models.Model):
                 payload = {
                     
                     # "id": chart_of_account.tripletex_account_id,
-                    "version": 0,
+                    # "version": 0,
                     "name": supplier.name,
                     "email": supplier.email,
                     "phoneNumberMobile":supplier.mobile,
